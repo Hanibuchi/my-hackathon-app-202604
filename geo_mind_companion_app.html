@@ -1,0 +1,454 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);background:var(--color-background-tertiary);color:var(--color-text-primary)}
+.app{display:flex;height:600px;overflow:hidden;border-radius:var(--border-radius-lg);border:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary)}
+.sidebar{width:64px;background:var(--color-background-secondary);border-right:0.5px solid var(--color-border-tertiary);display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:8px;flex-shrink:0}
+.nav-btn{width:44px;height:44px;border-radius:var(--border-radius-md);border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--color-text-secondary);transition:background 0.15s,color 0.15s;font-size:18px}
+.nav-btn:hover{background:var(--color-background-primary);color:var(--color-text-primary)}
+.nav-btn.active{background:var(--color-background-primary);color:var(--color-text-primary);border:0.5px solid var(--color-border-secondary)}
+.nav-label{font-size:9px;color:var(--color-text-tertiary);margin-top:2px;text-align:center;line-height:1.2}
+.content{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.page{display:none;flex:1;overflow-y:auto;padding:20px}
+.page.active{display:flex;flex-direction:column}
+.page-header{font-size:18px;font-weight:500;margin-bottom:16px;color:var(--color-text-primary)}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px;margin-bottom:12px}
+.card:hover{border-color:var(--color-border-secondary)}
+.progress-bar{height:6px;background:var(--color-background-secondary);border-radius:3px;overflow:hidden;margin-top:8px}
+.progress-fill{height:100%;border-radius:3px;transition:width 0.4s ease}
+.tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:var(--border-radius-md);margin-right:4px}
+.tag-blue{background:#E6F1FB;color:#0C447C}
+.tag-pink{background:#FBEAF0;color:#72243E}
+.tag-green{background:#EAF3DE;color:#27500A}
+.tag-amber{background:#FAEEDA;color:#633806}
+.btn{padding:8px 16px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-secondary);cursor:pointer;font-size:13px;color:var(--color-text-primary);transition:background 0.15s}
+.btn:hover{background:var(--color-background-tertiary)}
+.btn-primary{background:#185FA5;color:#E6F1FB;border-color:#185FA5}
+.btn-primary:hover{background:#0C447C}
+.input{width:100%;padding:8px 12px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-primary);font-size:14px;outline:none;font-family:var(--font-sans)}
+.input:focus{border-color:#378ADD;box-shadow:0 0 0 2px rgba(55,138,221,0.15)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.stat-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px;text-align:center}
+.stat-num{font-size:24px;font-weight:500}
+.stat-label{font-size:12px;color:var(--color-text-secondary);margin-top:2px}
+.geo-canvas{width:100%;height:200px;display:flex;align-items:center;justify-content:center;background:var(--color-background-secondary);border-radius:var(--border-radius-lg);position:relative;overflow:hidden;margin-bottom:16px}
+.chat-messages{flex:1;overflow-y:auto;margin-bottom:12px;max-height:240px;display:flex;flex-direction:column;gap:8px}
+.msg{padding:8px 12px;border-radius:var(--border-radius-lg);font-size:13px;line-height:1.5;max-width:85%}
+.msg-ai{background:var(--color-background-secondary);color:var(--color-text-primary);align-self:flex-start}
+.msg-user{background:#185FA5;color:#E6F1FB;align-self:flex-end}
+.chat-input-row{display:flex;gap:8px}
+.wizard-step{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px;margin-bottom:8px;font-size:13px}
+.wizard-step .step-num{font-size:11px;color:var(--color-text-tertiary);margin-bottom:4px}
+.subtask-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:20px;font-size:12px;margin:3px;cursor:pointer}
+.subtask-chip:hover{border-color:var(--color-border-primary)}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-day{aspect-ratio:1;border-radius:var(--border-radius-md);display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;position:relative;border:0.5px solid transparent}
+.cal-day:hover{border-color:var(--color-border-tertiary)}
+.cal-day.has-log{background:#E6F1FB;color:#0C447C}
+.cal-day.today{background:#185FA5;color:#E6F1FB}
+.cal-day.empty{opacity:0.3}
+.timeline-item{border-left:2px solid var(--color-border-secondary);padding-left:12px;margin-bottom:12px;position:relative}
+.timeline-item::before{content:'';width:8px;height:8px;border-radius:50%;background:#378ADD;position:absolute;left:-5px;top:4px}
+.log-summary{font-size:12px;color:var(--color-text-secondary);margin-top:4px;padding:6px;background:var(--color-background-secondary);border-radius:var(--border-radius-md)}
+.spinner{animation:spin 1.5s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pulse{animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.float{animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-8px) rotate(5deg)}}
+.geo-rotating{animation:geoRotate 4s linear infinite}
+@keyframes geoRotate{to{transform:rotate(360deg)}}
+.geo-pulsing{animation:geoPulse 1.5s ease-in-out infinite}
+@keyframes geoPulse{0%,100%{transform:scale(1);opacity:0.9}50%{transform:scale(1.2);opacity:1}}
+.geo-logical{animation:geoLogical 2s ease-in-out infinite}
+@keyframes geoLogical{0%,100%{transform:skewX(0deg)}50%{transform:skewX(5deg)}}
+.mood-indicator{font-size:11px;padding:3px 8px;border-radius:10px;margin-left:8px}
+.mood-positive{background:#FAEEDA;color:#633806}
+.mood-logical{background:#E6F1FB;color:#0C447C}
+.mood-encouraging{background:#FBEAF0;color:#72243E}
+select{padding:6px 10px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-primary);font-size:13px;cursor:pointer}
+textarea{resize:vertical;min-height:60px}
+</style>
+
+<div class="app">
+  <div class="sidebar">
+    <div style="margin-bottom:8px">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <polygon points="14,3 25,9 25,19 14,25 3,19 3,9" fill="#185FA5" opacity="0.15"/>
+        <polygon points="14,3 25,9 25,19 14,25 3,19 3,9" stroke="#185FA5" stroke-width="1.5" fill="none"/>
+        <circle cx="14" cy="14" r="4" fill="#185FA5"/>
+      </svg>
+    </div>
+    <div id="nav-dash" class="nav-btn active" onclick="navigate('dashboard')" title="ダッシュボード">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    </div>
+    <div id="nav-create" class="nav-btn" onclick="navigate('create')" title="目標作成">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    </div>
+    <div id="nav-chat" class="nav-btn" onclick="navigate('chat')" title="AIチャット">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    </div>
+    <div id="nav-detail" class="nav-btn" onclick="navigate('detail')" title="目標詳細">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="page active">
+      <div class="page-header">ダッシュボード</div>
+      <div class="grid-2" style="margin-bottom:16px">
+        <div class="stat-card"><div class="stat-num" style="color:#185FA5">3</div><div class="stat-label">進行中の目標</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#0F6E56">12</div><div class="stat-label">今週の記録</div></div>
+      </div>
+      <div id="project-cards"></div>
+      <button class="btn btn-primary" style="width:100%;margin-top:4px" onclick="navigate('create')">+ 新しい目標を追加</button>
+    </div>
+
+    <!-- GOAL CREATION -->
+    <div id="page-create" class="page">
+      <div class="page-header">目標作成ウィザード</div>
+      <div id="wizard-content">
+        <div class="wizard-step">
+          <div class="step-num">STEP 1 / 3 — 目標を入力</div>
+          <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:10px">達成したいことを自由に書いてください</p>
+          <input class="input" id="goal-input" placeholder="例：本を10冊読む、毎日5km走る..." style="margin-bottom:10px"/>
+          <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+            <select id="goal-category">
+              <option value="fitness">フィットネス</option>
+              <option value="learning">学習</option>
+              <option value="work">仕事</option>
+              <option value="creative">創作</option>
+            </select>
+            <input class="input" id="goal-deadline" type="text" placeholder="期限（例：3ヶ月）" style="flex:1"/>
+          </div>
+          <button class="btn btn-primary" onclick="runWizardStep1()">AIに分解してもらう →</button>
+        </div>
+        <div id="wizard-step2" style="display:none">
+          <div class="wizard-step">
+            <div class="step-num">STEP 2 / 3 — AIが提案するサブタスク</div>
+            <div id="ai-thinking" style="color:var(--color-text-secondary);font-size:13px;padding:8px 0">AIが分析中...</div>
+            <div id="subtask-list" style="display:none">
+              <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:8px">以下のサブタスクを確認・選択してください</p>
+              <div id="subtask-chips"></div>
+            </div>
+          </div>
+          <div id="wizard-step3-btn" style="display:none">
+            <button class="btn btn-primary" onclick="runWizardStep3()">この計画で決定 ✓</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI CHAT -->
+    <div id="page-chat" class="page" style="padding:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <span style="font-size:16px;font-weight:500">AI Chat</span>
+        <span id="mood-badge" class="mood-indicator mood-logical">論理的</span>
+      </div>
+      <div class="geo-canvas" id="geo-canvas">
+        <div id="geo-object"></div>
+        <div id="geo-particles"></div>
+      </div>
+      <div class="chat-messages" id="chat-messages"></div>
+      <div class="chat-input-row">
+        <input class="input" id="chat-input" placeholder="今日の進捗を報告してください..." onkeydown="if(event.key==='Enter')sendChat()"/>
+        <button class="btn btn-primary" onclick="sendChat()">送信</button>
+      </div>
+    </div>
+
+    <!-- GOAL DETAIL -->
+    <div id="page-detail" class="page">
+      <div class="page-header">目標詳細・アーカイブ</div>
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+        <select id="detail-goal-select" onchange="renderDetail()">
+          <option value="0">毎日5km走る（30日間）</option>
+          <option value="1">本を10冊読む（3ヶ月）</option>
+          <option value="2">英単語1000語暗記（2ヶ月）</option>
+        </select>
+      </div>
+      <div style="margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
+          <span>進捗</span>
+          <span id="detail-pct" style="font-weight:500">67%</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="detail-progress" style="width:67%;background:#185FA5"></div></div>
+      </div>
+      <div style="font-size:13px;font-weight:500;margin:12px 0 8px;color:var(--color-text-secondary)">4月のカレンダー</div>
+      <div style="display:flex;justify-content:space-around;font-size:11px;color:var(--color-text-tertiary);margin-bottom:4px">
+        <span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span><span>日</span>
+      </div>
+      <div class="calendar-grid" id="cal-grid"></div>
+      <div style="font-size:13px;font-weight:500;margin:16px 0 8px;color:var(--color-text-secondary)">最近の記録</div>
+      <div id="timeline"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const state = {
+  currentPage: 'dashboard',
+  mood: 'logical',
+  geoAnimating: false,
+  chatHistory: [
+    {role:'ai', text:'こんにちは！今日の進捗を教えてください。どんな小さなことでも大丈夫ですよ。'},
+  ],
+  projects: [
+    {id:0, name:'毎日5km走る', tag:'フィットネス', tagClass:'tag-green', progress:67, days:'30日間', logged:12},
+    {id:1, name:'本を10冊読む', tag:'学習', tagClass:'tag-blue', progress:30, days:'3ヶ月', logged:5},
+    {id:2, name:'英単語1000語', tag:'学習', tagClass:'tag-amber', progress:45, days:'2ヶ月', logged:8},
+  ],
+  logs: {
+    0: [
+      {date:'4/17', text:'5.2km走った。ペース良好。気分：爽快'},
+      {date:'4/16', text:'4.8km。少し疲れ気味。数値：4.8km'},
+      {date:'4/15', text:'5.1km走破。タイム28分。気分：ポジティブ'},
+      {date:'4/14', text:'雨のため休み。代わりにストレッチ20分'},
+    ],
+    1: [
+      {date:'4/17', text:'15ページ読了（第3章）。集中度：高'},
+      {date:'4/15', text:'20ページ。面白くて止まらなかった'},
+    ],
+    2: [
+      {date:'4/17', text:'50単語暗記。正答率80%。気分：満足'},
+      {date:'4/16', text:'40単語。少し難しかった。復習必要'},
+    ],
+  },
+  wizardGoal: '',
+  wizardSubtasks: [],
+  selectedSubtasks: new Set(),
+};
+
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.getElementById('nav-' + page.replace('detail','detail').replace('create','create').replace('chat','chat').replace('dashboard','dash')).classList.add('active');
+  state.currentPage = page;
+  if (page === 'dashboard') renderDashboard();
+  if (page === 'detail') renderDetail();
+  if (page === 'chat') initChat();
+}
+
+function renderDashboard() {
+  const c = document.getElementById('project-cards');
+  c.innerHTML = state.projects.map(p => `
+    <div class="card" onclick="navigate('detail');document.getElementById('detail-goal-select').value=${p.id};renderDetail();" style="cursor:pointer">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:14px;font-weight:500">${p.name}</span>
+        <span class="tag ${p.tagClass}">${p.tag}</span>
+      </div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:6px">期間: ${p.days} ・ 記録: ${p.logged}回</div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+        <span>進捗</span><span style="font-weight:500;color:#185FA5">${p.progress}%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${p.progress}%;background:#185FA5"></div></div>
+    </div>
+  `).join('');
+}
+
+function runWizardStep1() {
+  const goal = document.getElementById('goal-input').value.trim();
+  const deadline = document.getElementById('goal-deadline').value.trim() || '1ヶ月';
+  const cat = document.getElementById('goal-category').value;
+  if (!goal) return;
+  state.wizardGoal = goal;
+  document.getElementById('wizard-step2').style.display = 'block';
+  document.getElementById('ai-thinking').style.display = 'block';
+  document.getElementById('subtask-list').style.display = 'none';
+
+  const subtaskTemplates = {
+    fitness: ['毎日15分のウォームアップ', '週3回のトレーニング（30分）', '週に1回の長距離セッション', '水分補給の記録', '睡眠時間7時間確保'],
+    learning: ['毎日15ページ読む（約20分）', '週1回の振り返りノート', '月1回の要約レポート', '読了書リストの更新', '関連YouTube動画を週2本'],
+    work: ['朝30分の優先タスク整理', '週次の進捗レビュー', '集中作業ブロック（90分×2）', '毎日夕方の5分振り返り', 'チームへの週報共有'],
+    creative: ['毎日10分のアイデアスケッチ', '週1作品の完成を目標', '月1回の公開・フィードバック', '参考作品の分析メモ', 'スキル練習（30分/週）'],
+  };
+
+  setTimeout(() => {
+    state.wizardSubtasks = subtaskTemplates[cat] || subtaskTemplates.learning;
+    state.selectedSubtasks = new Set([0,1,2]);
+    document.getElementById('ai-thinking').style.display = 'none';
+    document.getElementById('subtask-list').style.display = 'block';
+    document.getElementById('wizard-step3-btn').style.display = 'block';
+
+    const chips = document.getElementById('subtask-chips');
+    chips.innerHTML = state.wizardSubtasks.map((t,i) => `
+      <span class="subtask-chip ${state.selectedSubtasks.has(i)?'tag-blue':''}" id="chip-${i}" onclick="toggleChip(${i},'${t.replace(/'/g,'')}')">${state.selectedSubtasks.has(i)?'✓ ':''+ t}</span>
+    `).join('') + `<div style="margin-top:10px;padding:10px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);font-size:12px;color:var(--color-text-secondary)">
+      AIの計算: 「${goal}」を「${deadline}」で達成するには、<strong style="color:var(--color-text-primary)">毎日少しずつ継続</strong>するのが最短ルートです。</div>`;
+  }, 1200);
+}
+
+function toggleChip(i, text) {
+  const chip = document.getElementById('chip-' + i);
+  if (state.selectedSubtasks.has(i)) {
+    state.selectedSubtasks.delete(i);
+    chip.className = 'subtask-chip';
+    chip.textContent = text;
+  } else {
+    state.selectedSubtasks.add(i);
+    chip.className = 'subtask-chip tag-blue';
+    chip.textContent = '✓ ' + text;
+  }
+}
+
+function runWizardStep3() {
+  const newGoal = {
+    id: state.projects.length,
+    name: state.wizardGoal.substring(0,20),
+    tag: document.getElementById('goal-category').value === 'fitness' ? 'フィットネス' : '学習',
+    tagClass: document.getElementById('goal-category').value === 'fitness' ? 'tag-green' : 'tag-blue',
+    progress: 0,
+    days: document.getElementById('goal-deadline').value || '1ヶ月',
+    logged: 0,
+  };
+  state.projects.push(newGoal);
+  state.logs[newGoal.id] = [];
+  document.getElementById('wizard-content').innerHTML = `
+    <div class="card" style="text-align:center;padding:32px">
+      <div style="font-size:32px;margin-bottom:12px">✓</div>
+      <div style="font-size:16px;font-weight:500;margin-bottom:8px">目標を設定しました！</div>
+      <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:16px">「${newGoal.name}」の追跡を開始します</div>
+      <button class="btn btn-primary" onclick="navigate('chat')">AIと話してみる →</button>
+    </div>`;
+}
+
+const aiResponses = [
+  {text:'素晴らしい進捗ですね！具体的にはどのくらいの距離や時間でしたか？数値があると記録がより充実します。', mood:'encouraging'},
+  {text:'頑張りましたね。その調子で続けていきましょう。今日の体の感覚はどうでしたか？', mood:'encouraging'},
+  {text:'記録しました。データによると、あなたは安定したペースで進んでいます。このまま継続すれば目標達成の可能性は高いです。', mood:'logical'},
+  {text:'今日も少し前進できました。小さな積み重ねが大きな変化を生みます。次回の目標を少し高く設定してみましょうか？', mood:'positive'},
+  {text:'なるほど。数値を教えてもらえると、より正確な分析ができます。例えば「3km走った」「30分勉強した」のような形で教えてください。', mood:'logical'},
+  {text:'お疲れ様でした。今日の気分や体調も記録しておくと、パターンが見えてきますよ。', mood:'encouraging'},
+];
+
+let aiIdx = 0;
+function getAIResponse(userMsg) {
+  const lower = userMsg.toLowerCase();
+  if (lower.includes('頑張') || lower.includes('走') || lower.includes('読')) {
+    return {text:'すごい！具体的にはどのくらいでしたか？数値があると進捗グラフがより充実します。', mood:'positive'};
+  }
+  if (lower.includes('km') || lower.includes('ページ') || lower.includes('分')) {
+    return {text:'記録しました。データによると着実に前進しています。この調子で続けていきましょう！', mood:'logical'};
+  }
+  if (lower.includes('疲') || lower.includes('無理') || lower.includes('休')) {
+    return {text:'休息も大切な計画の一部です。焦らず、できることから少しずつ取り組んでいきましょう。', mood:'encouraging'};
+  }
+  const r = aiResponses[aiIdx % aiResponses.length];
+  aiIdx++;
+  return r;
+}
+
+function extractSummary(userMsg) {
+  const now = new Date();
+  const dateStr = `${now.getMonth()+1}/${now.getDate()}`;
+  const nums = userMsg.match(/\d+/g);
+  const numStr = nums ? `数値：${nums.join(',')}` : '定性的な記録';
+  return {date: dateStr, text: userMsg.substring(0,30) + '... ' + numStr};
+}
+
+function setMood(mood) {
+  state.mood = mood;
+  const badge = document.getElementById('mood-badge');
+  const labels = {positive:'ポジティブ', logical:'論理的', encouraging:'応援中'};
+  const classes = {positive:'mood-positive', logical:'mood-logical', encouraging:'mood-encouraging'};
+  badge.textContent = labels[mood] || '論理的';
+  badge.className = 'mood-indicator ' + (classes[mood] || 'mood-logical');
+  updateGeo(mood);
+}
+
+function updateGeo(mood) {
+  const canvas = document.getElementById('geo-canvas');
+  const obj = document.getElementById('geo-object');
+  obj.innerHTML = '';
+  if (mood === 'positive') {
+    canvas.style.background = 'linear-gradient(135deg,#FAEEDA 0%,#FAC775 100%)';
+    obj.innerHTML = `<svg width="90" height="90" viewBox="0 0 90 90" class="geo-rotating" style="filter:drop-shadow(0 0 8px #EF9F2760)">
+      <polygon points="45,5 80,68 10,68" fill="none" stroke="#BA7517" stroke-width="2"/>
+      <polygon points="45,15 70,58 20,58" fill="#EF9F27" opacity="0.6"/>
+      <circle cx="45" cy="45" r="10" fill="#BA7517" opacity="0.8"/>
+    </svg>`;
+  } else if (mood === 'logical') {
+    canvas.style.background = 'linear-gradient(135deg,#E6F1FB 0%,#B5D4F4 100%)';
+    obj.innerHTML = `<svg width="90" height="90" viewBox="0 0 90 90" class="geo-logical">
+      <rect x="20" y="20" width="50" height="50" fill="none" stroke="#185FA5" stroke-width="2"/>
+      <rect x="30" y="30" width="30" height="30" fill="#378ADD" opacity="0.4"/>
+      <rect x="38" y="38" width="14" height="14" fill="#185FA5" opacity="0.8"/>
+      <line x1="10" y1="45" x2="80" y2="45" stroke="#185FA5" stroke-width="0.5" opacity="0.5"/>
+      <line x1="45" y1="10" x2="45" y2="80" stroke="#185FA5" stroke-width="0.5" opacity="0.5"/>
+    </svg>`;
+  } else if (mood === 'encouraging') {
+    canvas.style.background = 'linear-gradient(135deg,#FBEAF0 0%,#F4C0D1 100%)';
+    obj.innerHTML = `<svg width="90" height="90" viewBox="0 0 90 90" class="geo-pulsing">
+      <circle cx="45" cy="45" r="35" fill="none" stroke="#D4537E" stroke-width="1.5" opacity="0.3"/>
+      <circle cx="45" cy="45" r="25" fill="none" stroke="#D4537E" stroke-width="1.5" opacity="0.5"/>
+      <circle cx="45" cy="45" r="15" fill="#D4537E" opacity="0.7"/>
+      <circle cx="45" cy="45" r="8" fill="#993556"/>
+    </svg>`;
+  }
+}
+
+function initChat() {
+  renderChatMessages();
+  updateGeo(state.mood);
+}
+
+function renderChatMessages() {
+  const container = document.getElementById('chat-messages');
+  container.innerHTML = state.chatHistory.map(m =>
+    `<div class="msg msg-${m.role}">${m.text}</div>`
+  ).join('');
+  container.scrollTop = container.scrollHeight;
+}
+
+function sendChat() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  state.chatHistory.push({role:'user', text});
+  renderChatMessages();
+
+  setTimeout(() => {
+    const response = getAIResponse(text);
+    state.chatHistory.push({role:'ai', text: response.text});
+    setMood(response.mood);
+    renderChatMessages();
+    const summary = extractSummary(text);
+    if (state.logs[0]) state.logs[0].unshift(summary);
+  }, 800);
+}
+
+function renderDetail() {
+  const idx = parseInt(document.getElementById('detail-goal-select').value);
+  const proj = state.projects[idx];
+  if (!proj) return;
+  document.getElementById('detail-pct').textContent = proj.progress + '%';
+  document.getElementById('detail-progress').style.width = proj.progress + '%';
+
+  const grid = document.getElementById('cal-grid');
+  const offset = 0;
+  let html = '';
+  for(let i=0;i<offset;i++) html += `<div class="cal-day empty"></div>`;
+  for(let i=1;i<=30;i++) {
+    const hasLog = i<=18 && (i%3!==0 || i===15);
+    const isToday = i===18;
+    html += `<div class="cal-day ${isToday?'today':hasLog?'has-log':''}" title="${i}日">${i}</div>`;
+  }
+  grid.innerHTML = html;
+
+  const logs = state.logs[idx] || [];
+  const timeline = document.getElementById('timeline');
+  if (!logs.length) { timeline.innerHTML = '<div style="font-size:13px;color:var(--color-text-secondary)">記録はまだありません</div>'; return; }
+  timeline.innerHTML = logs.map(l => `
+    <div class="timeline-item">
+      <div style="font-size:12px;color:var(--color-text-tertiary)">${l.date}</div>
+      <div style="font-size:13px;margin-top:2px">${proj.name}</div>
+      <div class="log-summary">${l.text}</div>
+    </div>
+  `).join('');
+}
+
+renderDashboard();
+updateGeo('logical');
+</script>

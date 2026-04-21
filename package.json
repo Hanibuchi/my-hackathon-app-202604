@@ -1,0 +1,15 @@
+{
+  "name": "geo-mind-companion",
+  "version": "1.0.0",
+  "description": "感情を幾何学的な図形で表現するAI目標達成コンパニオンアプリ",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.52.0",
+    "dotenv": "^16.0.0",
+    "express": "^4.18.0"
+  }
+}

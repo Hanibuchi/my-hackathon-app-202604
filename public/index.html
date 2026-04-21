@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GeoMind — AI Goal Companion</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="logo">
+      <svg width="30" height="30" viewBox="0 0 28 28">
+        <polygon points="14,3 25,9 25,19 14,25 3,19 3,9" fill="#185FA5" opacity="0.18"/>
+        <polygon points="14,3 25,9 25,19 14,25 3,19 3,9" stroke="#185FA5" stroke-width="1.5" fill="none"/>
+        <circle cx="14" cy="14" r="4" fill="#185FA5"/>
+      </svg>
+    </div>
+    <nav>
+      <button class="nav-btn active" data-page="dashboard" title="ダッシュボード" onclick="navigate('dashboard')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+          <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+        </svg>
+        <span>ホーム</span>
+      </button>
+      <button class="nav-btn" data-page="create" title="目標作成" onclick="navigate('create')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="12" r="9"/>
+          <line x1="12" y1="8" x2="12" y2="16"/>
+          <line x1="8" y1="12" x2="16" y2="12"/>
+        </svg>
+        <span>目標</span>
+      </button>
+      <button class="nav-btn" data-page="chat" title="AIチャット" onclick="navigate('chat')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        <span>チャット</span>
+      </button>
+      <button class="nav-btn" data-page="detail" title="記録・詳細" onclick="navigate('detail')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
+        <span>記録</span>
+      </button>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <!-- DASHBOARD -->
+    <section id="page-dashboard" class="page active">
+      <div class="page-header">ダッシュボード</div>
+      <div class="grid-2 mb-16">
+        <div class="stat-card">
+          <div class="stat-num" id="stat-goals" style="color:#185FA5">0</div>
+          <div class="stat-label">進行中の目標</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-logs" style="color:#0F6E56">0</div>
+          <div class="stat-label">今週の記録</div>
+        </div>
+      </div>
+      <div id="goal-cards"></div>
+      <div id="dash-empty" class="empty-state" style="display:none">
+        <div class="empty-icon">◇</div>
+        <p>まだ目標がありません</p>
+        <p style="font-size:12px;margin-top:4px">目標を作成してAIと一緒に達成を目指しましょう</p>
+      </div>
+      <button class="btn btn-primary w-full mt-8" onclick="navigate('create')">+ 新しい目標を追加</button>
+    </section>
+
+    <!-- CREATE WIZARD -->
+    <section id="page-create" class="page">
+      <div class="page-header">目標作成ウィザード</div>
+      <div id="wizard-content">
+        <div class="step-block">
+          <div class="step-label">STEP 1 / 3 — 目標を入力</div>
+          <p class="step-desc mb-10">達成したいことを自由に書いてください</p>
+          <input class="input mb-10" id="goal-input" placeholder="例：本を10冊読む、毎日5km走る...">
+          <div class="row-wrap mb-10" style="gap:8px">
+            <select id="goal-category" class="select">
+              <option value="フィットネス">フィットネス</option>
+              <option value="学習">学習</option>
+              <option value="仕事">仕事</option>
+              <option value="創作">創作</option>
+              <option value="健康">健康</option>
+              <option value="その他">その他</option>
+            </select>
+            <input class="input" id="goal-deadline" type="text" placeholder="期限（例：1ヶ月）" style="flex:1">
+          </div>
+          <button class="btn btn-primary" onclick="wizardStep1()">AIに分解してもらう →</button>
+        </div>
+        <div id="wizard-step2" style="display:none">
+          <div class="step-block mt-12">
+            <div class="step-label">STEP 2 / 3 — AIが提案するサブタスク</div>
+            <div id="ai-loading" class="ai-loading">
+              <div class="spinner"></div>
+              <span>AIが計画を分析中...</span>
+            </div>
+            <div id="subtask-area" style="display:none">
+              <p class="step-desc mb-8">クリックで選択・解除できます</p>
+              <div id="subtask-chips"></div>
+              <div id="ai-advice" class="ai-advice"></div>
+              <button class="btn btn-primary mt-12" onclick="wizardStep3()">この計画で決定 ✓</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CHAT -->
+    <section id="page-chat" class="page">
+      <div class="chat-top">
+        <span class="chat-title">GeoMind Chat</span>
+        <div class="chat-top-right">
+          <select id="chat-goal-select" class="select-sm"></select>
+          <span id="mood-badge" class="mood-badge mood-logical">論理的</span>
+        </div>
+      </div>
+      <canvas id="geo-canvas" class="geo-canvas"></canvas>
+      <div id="chat-messages" class="chat-messages"></div>
+      <div class="chat-input-row">
+        <button id="voice-btn" class="btn btn-icon" onclick="toggleVoice()" title="音声入力">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+            <line x1="12" y1="19" x2="12" y2="23"/>
+            <line x1="8" y1="23" x2="16" y2="23"/>
+          </svg>
+        </button>
+        <input id="chat-input" class="input" placeholder="今日の進捗を報告してください..."
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}">
+        <button class="btn btn-primary" onclick="sendChat()">送信</button>
+      </div>
+    </section>
+
+    <!-- DETAIL -->
+    <section id="page-detail" class="page">
+      <div class="page-header">記録・詳細</div>
+      <select id="detail-select" class="select w-full mb-12" onchange="renderDetail()"></select>
+      <div id="detail-empty" class="empty-state" style="display:none">
+        <div class="empty-icon">◇</div>
+        <p>まだ目標がありません</p>
+      </div>
+      <div id="detail-body">
+        <div class="progress-row">
+          <span>進捗</span>
+          <span id="detail-pct" style="font-weight:500;color:#185FA5">0%</span>
+        </div>
+        <div class="progress-bar mb-16">
+          <div id="detail-fill" class="progress-fill"></div>
+        </div>
+        <div class="section-label mb-4" id="cal-month-label">今月のカレンダー</div>
+        <div class="cal-weekdays">
+          <span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span><span>日</span>
+        </div>
+        <div id="cal-grid" class="calendar-grid mb-16"></div>
+        <div class="section-label mb-8">最近の記録</div>
+        <div id="timeline" class="timeline"></div>
+      </div>
+    </section>
+  </main>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

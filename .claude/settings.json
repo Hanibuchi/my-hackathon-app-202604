@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cmd.exe /c \"echo test && node -e \\\\\"console.log\\('node ok'\\)\\\\\" 2>&1 | cat\")"
+    ]
+  }
+}

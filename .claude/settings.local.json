@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(where node *)",
+      "Bash(cmd.exe /c \"where node && where npm\")",
+      "Bash(cmd.exe /c \"node --version 2>&1 && npm --version 2>&1\")"
+    ]
+  }
+}
